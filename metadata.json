@@ -1,0 +1,10 @@
+{
+  "name": "VISOR",
+  "description": "A predictive supply chain resilience copilot that monitors disruptions using real-time global intelligence, weather alerts, and AI-driven risk modeling.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
