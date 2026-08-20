@@ -98,6 +98,29 @@ async function startServer() {
     next();
   });
 
+  // ─── Rate Limiting Middleware ──────────────────────────────────
+  const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+  const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 60 seconds
+  const RATE_LIMIT_MAX = 100; // 100 requests per window
+
+  app.use((req, res, next) => {
+    const ip = req.ip || "unknown";
+    const now = Date.now();
+    const record = rateLimitMap.get(ip);
+
+    if (!record || now > record.resetAt) {
+      rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS });
+      return next();
+    }
+
+    if (record.count >= RATE_LIMIT_MAX) {
+      return res.status(429).json({ error: "Rate limit exceeded. Try again later." });
+    }
+
+    record.count += 1;
+    next();
+  });
+
   app.use(express.json());
 
   // ─── Health Check ──────────────────────────────────────────────
