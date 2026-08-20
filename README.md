@@ -58,13 +58,13 @@ VISOR uses a multi-agent pipeline with a deterministic risk layer:
                   Supplier Intelligence
 
                   
-Key architectural principle
+### Key architectural principle
 
-The LLM explains risk; it does not decide risk.
+- The LLM explains risk; it does not decide risk.
 
-The Risk Agent produces the authoritative risk score from structured evidence. The Briefing Agent then uses that score and the collected evidence to generate the executive narrative.
+- The Risk Agent produces the authoritative risk score from structured evidence. The Briefing Agent then uses that score and the collected evidence to generate the executive narrative.
 
-Risk Scoring
+### Risk Scoring
 
 VISOR uses a deterministic 0–100 risk score:
 
@@ -75,11 +75,11 @@ Score Status
 
 The score considers:
 
-Event severity
-Supplier criticality
-Geographic proximity
-Data confidence
-Event duration
+- Event severity
+- Supplier criticality
+- Geographic proximity
+- Data confidence
+- Event duration
 
 This makes the core risk classification transparent and reproducible rather than dependent on LLM output.
 
