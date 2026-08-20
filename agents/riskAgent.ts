@@ -197,7 +197,7 @@ export const runRiskAgent = (
 
   // When simulated, inject a synthetic disruption so the SAME weighted formula scores it
   if (isSimulated) {
-    const syntheticDisruption = { severity: 'High' as const, location: supplier.location, type: 'Incident' as const, title: 'Simulated Crisis Event', summary: 'Synthetic disruption injected for crisis simulation', confidence: 90, sourceUrls: [] as string[], verificationStatus: 'AI-synthesized' as const };
+    const syntheticDisruption = { severity: 'High' as const, location: supplier.location, type: 'Strike' as const, title: 'Simulated Crisis Event', summary: 'Synthetic disruption injected for crisis simulation', confidence: 90, sourceUrls: [] as string[], verificationStatus: 'AI-synthesized' as const };
     relevantDisruptions.push(syntheticDisruption);
     const syntheticAlert = { severity: 'High' as const, location: supplier.location, condition: 'Crisis Simulation', temperature: 0, windSpeed: 0, humidity: 0, description: 'Simulated crisis alert', icon: '', impactedSupplierIds: [supplier.id], supplyChainImpact: 'Simulated high-impact disruption to supplier operations' };
     relevantAlerts.push(syntheticAlert);

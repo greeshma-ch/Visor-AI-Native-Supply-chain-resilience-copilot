@@ -62,9 +62,6 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
   const [impactLoading, setImpactLoading] = useState(false);
   const [impactError, setImpactError] = useState(false);
 
-  // The supplier prop already comes from activeSuppliers in App.tsx, which is reconciled
-  const resolvedStatus = supplier.status;
-  
   // Abort controller ref for cleanup on unmount
   const abortRef = useRef<AbortController | null>(null);
 
@@ -113,6 +110,9 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
       
       setImpactError(false);
       setBrief(intelData);
+      if (intelData.suggestedStatus) {
+        onUpdateStatus(intelData.suggestedStatus);
+      }
       
       if (intelData.impactAnalysis) {
         setImpactAnalysis(intelData.impactAnalysis);
@@ -125,13 +125,6 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
       setImpactLoading(false);
     }
   }, [supplier.id, isSimulated]);
-
-  const handleSyncStatus = () => {
-    if (brief?.suggestedStatus) {
-      onUpdateStatus(brief.suggestedStatus);
-      toast.success(`Registry updated: ${supplier.name} status set to ${brief.suggestedStatus}`);
-    }
-  };
 
   useEffect(() => {
     setBrief(null);
@@ -195,50 +188,31 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
             {isSimulated ? 'Crisis Mode Active' : 'Trigger Crisis Simulation'}
           </motion.button>
           <div className="h-10 w-[1px] bg-white/5 mx-2 hidden sm:block" />
-          <div className="flex flex-col items-end">
-            <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest mb-1">Node Integrity</span>
-            <RiskBadge status={resolvedStatus} size="md" />
-          </div>
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {loading ? (
               <motion.div 
+                key="loading"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="flex flex-col items-end border-l border-white/10 pl-4 min-w-[120px]"
+                className="flex flex-col items-end min-w-[120px]"
               >
                 <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest mb-1">
                   {isSimulated ? 'Calibrating Scenario...' : 'Processing Signals...'}
                 </span>
                 <Skeleton className="h-6 w-24" />
               </motion.div>
-            ) : brief?.suggestedStatus && (
+            ) : (
               <motion.div 
+                key="assessment"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="flex flex-col items-end border-l border-white/10 pl-4"
+                className="flex flex-col items-end"
               >
-                <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest mb-1">{isSimulated ? 'Strategic Threat Level' : 'AI Assessment'}</span>
-                <div className="flex items-center gap-2">
-                  <RiskBadge status={brief.suggestedStatus} size="md" />
-                  {brief.suggestedStatus === resolvedStatus ? (
-                    <div className="flex items-center gap-1 text-[8px] font-black text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded-md border border-emerald-500/20">
-                      <Check size={10} /> Synchronized
-                    </div>
-                  ) : (
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={handleSyncStatus}
-                      className="flex items-center gap-1 text-[8px] font-black text-amber-500 uppercase tracking-widest bg-amber-500/10 px-2 py-1 rounded-md border border-amber-500/20 hover:bg-amber-500/20 transition-colors shadow-sm"
-                    >
-                      <RefreshCw size={10} /> Sync Registry
-                    </motion.button>
-                  )}
-                </div>
-                <p className="text-[9px] font-medium text-slate-600 mt-1 opacity-60">
-                  {weather?.weather?.[0]?.main || 'N/A'} + {brief?.todayFeed?.[0]?.status || 'N/A'} = {brief?.suggestedStatus}
-                </p>
+                <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest mb-1">
+                  {isSimulated ? 'Strategic Threat Level' : 'AI Assessment'}
+                </span>
+                <RiskBadge status={brief?.suggestedStatus || supplier.status} size="md" />
               </motion.div>
             )}
           </AnimatePresence>
