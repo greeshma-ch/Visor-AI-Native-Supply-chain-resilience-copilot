@@ -16,7 +16,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onComplete }) => {
   const [password, setPassword] = useState('');
   const [company, setCompany] = useState('');
   const [role, setRole] = useState<Role | ''>('Analyst');
-  const [hqLocation, setHqLocation] = useState('San Francisco');
+  const [hqLocation, setHqLocation] = useState('San Francisco, USA');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -224,20 +224,21 @@ const AuthView: React.FC<AuthViewProps> = ({ onComplete }) => {
                   <Globe size={14} /> Global Headquarters
                 </label>
                 <div className="relative">
-                  <input
-                    list="global-cities"
-                    type="text"
-                    required
+                  <select
                     value={hqLocation}
                     onChange={(e) => setHqLocation(e.target.value)}
-                    placeholder="Search or enter city..."
-                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-white placeholder:text-slate-700 text-sm"
-                  />
-                  <datalist id="global-cities">
+                    required
+                    className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all appearance-none text-white text-sm cursor-pointer"
+                  >
                     {GLOBAL_HUBS.map((hub) => (
-                      <option key={hub.name} value={hub.name} />
+                      <option key={hub.name} value={hub.name} className="bg-[#0a0f1c]">
+                        {hub.name}
+                      </option>
                     ))}
-                  </datalist>
+                  </select>
+                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                    <ChevronDown size={14} />
+                  </div>
                 </div>
               </div>
 
