@@ -117,6 +117,7 @@ CRITICAL RULES:
 3. Keep each field concise (2-3 sentences max).
 4. The todayFeed items MUST reference actual events from the evidence.
 5. For alternativeSuppliers, ONLY select from the provided list of available alternatives. Do NOT invent supplier names.
+6. The vectorSummary MUST explicitly state the risk level word (STABLE, CAUTION, or RISKY) matching the provided RISK SCORE — do not use vague reassuring language like 'largely stable' or 'no immediate concern' if the score is CAUTION or RISKY.
 
 Respond ONLY with valid JSON:
 {
@@ -181,6 +182,24 @@ Generate a concise executive briefing. Every statement must be traceable to the 
             ...item,
             status: validStatuses.has(item.status) ? item.status : RiskStatus.STABLE,
           }));
+        }
+
+        // Validate narrative fields don't contradict the risk score
+        if (riskScore.level === RiskStatus.CAUTION || riskScore.level === RiskStatus.RISKY) {
+          const correctLevel = riskScore.level; // 'CAUTION' or 'RISKY'
+          const contradicts = (text: string): boolean => {
+            const lower = text.toLowerCase();
+            return lower.includes('stable') && !lower.includes(correctLevel.toLowerCase());
+          };
+          if (parsed.vectorSummary && contradicts(parsed.vectorSummary)) {
+            parsed.vectorSummary = `[${correctLevel}] ${parsed.vectorSummary}`;
+          }
+          if (parsed.weatherStatus && contradicts(parsed.weatherStatus)) {
+            parsed.weatherStatus = `[${correctLevel}] ${parsed.weatherStatus}`;
+          }
+          if (parsed.historicalContext && contradicts(parsed.historicalContext)) {
+            parsed.historicalContext = `[${correctLevel}] ${parsed.historicalContext}`;
+          }
         }
 
         // If LLM returned no alternatives but we have candidates, use registry candidates
