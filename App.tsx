@@ -490,7 +490,6 @@ const App: React.FC = () => {
                     user={user}
                     supplier={activeSuppliers.find(s => s.id === selectedSupplier.id) || selectedSupplier}
                     onBack={() => setSelectedSupplier(null)}
-                    onUpdateStatus={(status) => updateSupplierStatus(selectedSupplier.id, status)}
                     onNavigateToResources={(context) => {
                       if (context) setResourceContext(context);
                       setSelectedSupplier(null);

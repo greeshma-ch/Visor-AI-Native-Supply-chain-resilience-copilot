@@ -35,7 +35,6 @@ interface IntelligenceViewProps {
   user: User;
   supplier: Supplier;
   onBack: () => void;
-  onUpdateStatus: (status: RiskStatus) => void;
   onNavigateToResources: (context?: { title: string; sources: { title: string; uri: string }[] }) => void;
   isSimulated?: boolean;
   onToggleSimulation: () => void;
@@ -47,7 +46,6 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
   user, 
   supplier, 
   onBack, 
-  onUpdateStatus, 
   onNavigateToResources, 
   isSimulated, 
   onToggleSimulation,
@@ -112,9 +110,6 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
       
       setImpactError(false);
       setBrief(intelData);
-      if (intelData.suggestedStatus) {
-        onUpdateStatus(intelData.suggestedStatus);
-      }
       
       if (intelData.impactAnalysis) {
         setImpactAnalysis(intelData.impactAnalysis);
