@@ -31,7 +31,7 @@ How severe is the risk?
 What should be done next?
 Architecture
 
-VISOR uses a multi-agent pipeline with a deterministic risk layer:
+##VISOR uses a multi-agent pipeline with a deterministic risk layer:
 
              ┌──────────────┐
              │  News Agent  │
@@ -56,20 +56,22 @@ VISOR uses a multi-agent pipeline with a deterministic risk layer:
                   └────────┬─────────┘
                            ▼
                   Supplier Intelligence
-Key architectural principle
+
+                  
+###Key architectural principle
 
 The LLM explains risk; it does not decide risk.
 
 The Risk Agent produces the authoritative risk score from structured evidence. The Briefing Agent then uses that score and the collected evidence to generate the executive narrative.
 
-Risk Scoring
+###Risk Scoring
 
 VISOR uses a deterministic 0–100 risk score:
 
-Score	Status
-1. 0–39	🟢 STABLE
-2. 40–69	🟡 CAUTION
-3. 70–100   🔴 RISKY
+**Score Status
+1. 0–39    🟢 STABLE 
+2. 40–69   🟡 CAUTION 
+3. 70–100  🔴 RISKY   
 
 The score considers:
 
