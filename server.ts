@@ -525,7 +525,7 @@ async function startServer() {
     });
   }
 
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT) || 3000;
   await app.listen(PORT, "0.0.0.0");
   logger.info("startup", `VISOR Intelligence Server running on http://localhost:${PORT}`);
 }

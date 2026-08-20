@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { View, Supplier, User, RiskStatus, Disruption, Role } from './types';
 import { MOCK_DISRUPTIONS, MOCK_SUPPLIERS, getCityCoords } from './constants';
 import { fetchWeatherAlerts } from './services/weatherService';
-import { generateGlobalRiskSignals } from './services/apiClient';
+import { generateGlobalRiskSignals, generateSupplierIntelligence } from './services/apiClient';
 import { resolveSupplierStatus } from './lib/riskEngine';
 import {
   supabase,
@@ -70,11 +70,11 @@ const App: React.FC = () => {
     }
     return null;
   });
-  
+
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<RiskStatus | 'ALL'>('ALL');
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
-  
+
   const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
     const saved = localStorage.getItem('vs_suppliers');
     if (saved) {
@@ -199,6 +199,9 @@ const App: React.FC = () => {
       if (manualStatusOverrides[s.id]) {
         return { ...s, status: manualStatusOverrides[s.id] };
       }
+      if (s.status === RiskStatus.PENDING) {
+        return s;
+      }
       const { status } = resolveSupplierStatus(s, disruptions, simulatedRiskyNodes);
       return { ...s, status };
     });
@@ -218,9 +221,9 @@ const App: React.FC = () => {
         withTimeout(generateGlobalRiskSignals(user, suppliers), 20000).catch(() => []),
         fetchWeatherAlerts(suppliers)
       ]);
-      
+
       // Combine and deduplicate by title + location
-      const combined = [...dynamicDisruptions, ...weatherAlerts].filter((v, i, a) => 
+      const combined = [...dynamicDisruptions, ...weatherAlerts].filter((v, i, a) =>
         a.findIndex(t => t.title === v.title && t.location === v.location) === i
       );
 
@@ -235,7 +238,7 @@ const App: React.FC = () => {
 
       setDisruptions(sorted.length > 0 ? sorted : MOCK_DISRUPTIONS);
       setIsDisruptionDataLive(sorted.length > 0);
-      
+
       if (combined.length > 0) {
         toast.success("Intelligence Refreshed", {
           description: `Synchronized with ${combined.length} real-time risk signals.`,
@@ -310,17 +313,17 @@ const App: React.FC = () => {
   const toggleNodeSimulation = (supplierId: string) => {
     setSimulatedRiskyNodes(prev => {
       const isSimulated = prev.includes(supplierId);
-      const next = isSimulated 
-        ? prev.filter(id => id !== supplierId) 
+      const next = isSimulated
+        ? prev.filter(id => id !== supplierId)
         : [...prev, supplierId];
-      
+
       toast.info(isSimulated ? "Node Restored" : "Node Compromised", {
         id: `sim-${supplierId}`,
-        description: isSimulated 
+        description: isSimulated
           ? "Supplier has been removed from the crisis simulation."
           : "Supplier has been flagged as RISKY for simulation purposes."
       });
-      
+
       return next;
     });
   };
@@ -334,6 +337,23 @@ const App: React.FC = () => {
     if (user?.id && isSupabaseConfigured) {
       await insertUserSupplier(user.id, newSupplier);
     }
+
+    // Immediately trigger background intelligence analysis for the new supplier
+    generateSupplierIntelligence(newSupplier, undefined, false, disruptions, [newSupplier, ...suppliers])
+      .then(intelData => {
+        if (intelData) {
+          const finalStatus =
+            intelData.suggestedStatus ||
+            intelData.riskScore?.level;
+
+          if (finalStatus) {
+            updateSupplierStatus(newSupplier.id, finalStatus);
+          }
+        }
+      })
+      .catch(err => {
+        console.error("[App] Background analysis for new supplier failed:", err);
+      });
   };
 
   if (!user) {
@@ -344,7 +364,7 @@ const App: React.FC = () => {
     switch (view) {
       case 'DASHBOARD':
         return (
-          <DashboardView 
+          <DashboardView
             user={user}
             categoryFilter={categoryFilter}
             statusFilter={statusFilter}
@@ -364,7 +384,7 @@ const App: React.FC = () => {
         );
       case 'REGISTRY':
         return (
-          <RegistryView 
+          <RegistryView
             user={user}
             updateSectors={updateSectors}
             suppliers={activeSuppliers}
@@ -372,13 +392,13 @@ const App: React.FC = () => {
             onCategoryFilterChange={setCategoryFilter}
             statusFilter={statusFilter}
             onStatusFilterChange={setStatusFilter}
-            onSelectSupplier={navigateToSupplierIntelligence} 
+            onSelectSupplier={navigateToSupplierIntelligence}
             onAddSupplier={handleAddSupplier}
           />
         );
       case 'MAP':
         return (
-          <MapView 
+          <MapView
             suppliers={activeSuppliers}
             categoryFilter={categoryFilter}
             statusFilter={statusFilter}
@@ -389,15 +409,15 @@ const App: React.FC = () => {
         );
       case 'FEED':
         return (
-          <FeedView 
-            user={user} 
-            categoryFilter={categoryFilter} 
+          <FeedView
+            user={user}
+            categoryFilter={categoryFilter}
             onNavigateToResources={(title) => {
               setResourceContext({ title, sources: [] });
               setView('RESOURCES');
-            }} 
-            disruptions={disruptions} 
-            suppliers={activeSuppliers} 
+            }}
+            disruptions={disruptions}
+            suppliers={activeSuppliers}
             simulatedRiskyNodes={simulatedRiskyNodes}
             isRefreshing={isRefreshing}
             isDisruptionDataLive={isDisruptionDataLive}
@@ -407,12 +427,12 @@ const App: React.FC = () => {
         return <SettingsView user={user} onLogout={handleLogout} />;
       case 'RESOURCES':
         return (
-          <ResourcesView 
+          <ResourcesView
             user={user}
             onBack={() => {
               setResourceContext(null);
               setView('DASHBOARD');
-            }} 
+            }}
             context={resourceContext}
             disruptions={disruptions}
             suppliers={activeSuppliers}
@@ -425,69 +445,70 @@ const App: React.FC = () => {
 
   return (
     <>
-    <Layout 
-      activeView={view} 
-      onViewChange={handleViewChange} 
-      onLogout={handleLogout}
-      user={user}
-      categoryFilter={categoryFilter}
-      onCategoryFilterChange={setCategoryFilter}
-    >
-      <div className="relative h-full overflow-hidden flex flex-col">
-        {/* Main Application Content */}
-        <motion.div 
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          onDragEnd={(_, info) => handleSwipe(info.offset.x, info.velocity.x)}
-          className={`flex-1 ${view === 'MAP' ? 'overflow-hidden' : 'overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 lg:py-10'} custom-scrollbar ${selectedSupplier ? 'opacity-20 blur-md scale-[0.98] pointer-events-none' : 'opacity-100 scale-100'}`}
-        >
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.div
-              key={view}
-              initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: direction > 0 ? -50 : 50, opacity: 0 }}
-              transition={{ duration: 0.15, ease: "easeOut" }}
-              className="h-full"
-            >
-              {renderView()}
-            </motion.div>
-          </AnimatePresence>
-        </motion.div>
+      <Layout
+        activeView={view}
+        onViewChange={handleViewChange}
+        onLogout={handleLogout}
+        user={user}
+        categoryFilter={categoryFilter}
+        onCategoryFilterChange={setCategoryFilter}
+      >
+        <div className="relative h-full overflow-hidden flex flex-col">
+          {/* Main Application Content */}
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={(_, info) => handleSwipe(info.offset.x, info.velocity.x)}
+            className={`flex-1 ${view === 'MAP' ? 'overflow-hidden' : 'overflow-y-auto px-4 sm:px-6 md:px-8 lg:px-10 py-6 sm:py-8 lg:py-10'} custom-scrollbar ${selectedSupplier ? 'opacity-20 blur-md scale-[0.98] pointer-events-none' : 'opacity-100 scale-100'}`}
+          >
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.div
+                key={view}
+                initial={{ x: direction > 0 ? 50 : -50, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                exit={{ x: direction > 0 ? -50 : 50, opacity: 0 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="h-full"
+              >
+                {renderView()}
+              </motion.div>
+            </AnimatePresence>
+          </motion.div>
 
-        {/* Intelligence View Overlay */}
-        <AnimatePresence>
-          {selectedSupplier && (
-            <motion.div 
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: "spring", damping: 25, stiffness: 300, restDelta: 0.5 }}
-              className="fixed inset-0 z-50 bg-[#070b14]/90 backdrop-blur-xl overflow-y-auto shadow-2xl"
-            >
-              <div className="max-w-[1600px] mx-auto p-4 sm:p-6 md:p-10 min-h-full">
-                <IntelligenceView 
-                  user={user}
-                  supplier={activeSuppliers.find(s => s.id === selectedSupplier.id) || selectedSupplier} 
-                  onBack={() => setSelectedSupplier(null)}
-                  onUpdateStatus={(status) => updateSupplierStatus(selectedSupplier.id, status)}
-                  onNavigateToResources={(context) => {
+          {/* Intelligence View Overlay */}
+          <AnimatePresence>
+            {selectedSupplier && (
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: "spring", damping: 25, stiffness: 300, restDelta: 0.5 }}
+                className="fixed inset-0 z-50 bg-[#070b14]/90 backdrop-blur-xl overflow-y-auto shadow-2xl"
+              >
+                <div className="max-w-[1600px] mx-auto p-4 sm:p-6 md:p-10 min-h-full">
+                  <IntelligenceView
+                    user={user}
+                    supplier={activeSuppliers.find(s => s.id === selectedSupplier.id) || selectedSupplier}
+                    onBack={() => setSelectedSupplier(null)}
+                    onUpdateStatus={(status) => updateSupplierStatus(selectedSupplier.id, status)}
+                    onNavigateToResources={(context) => {
                       if (context) setResourceContext(context);
                       setSelectedSupplier(null);
                       setView('RESOURCES');
-                  }}
-                  isSimulated={simulatedRiskyNodes.includes(selectedSupplier.id)}
-                  onToggleSimulation={() => toggleNodeSimulation(selectedSupplier.id)}
-                  disruptions={disruptions}
-                />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </Layout>
-    <Toaster position="top-right" theme="dark" richColors />
-  </>
+                    }}
+                    isSimulated={simulatedRiskyNodes.includes(selectedSupplier.id)}
+                    onToggleSimulation={() => toggleNodeSimulation(selectedSupplier.id)}
+                    disruptions={disruptions}
+                    suppliers={activeSuppliers}
+                  />
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </Layout>
+      <Toaster position="top-right" theme="dark" richColors />
+    </>
   );
 };
 

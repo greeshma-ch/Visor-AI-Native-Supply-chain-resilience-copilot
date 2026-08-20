@@ -62,7 +62,7 @@ const RegistryView: React.FC<RegistryViewProps> = ({
       name: formData.get('name') as string,
       location: locationName,
       coordinates: coords as [number, number],
-      status: RiskStatus.STABLE,
+      status: RiskStatus.PENDING,
       category: formData.get('category') as string,
       contactEmail: formData.get('email') as string,
       lastUpdated: new Date().toISOString()

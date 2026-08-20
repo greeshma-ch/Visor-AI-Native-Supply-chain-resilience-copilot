@@ -6,6 +6,8 @@
 
 import { Disruption, Supplier } from '../types';
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
 const withRetry = async <T>(fn: () => Promise<T>, retries = 2, delay = 500): Promise<T> => {
   try {
     return await fn();
@@ -33,7 +35,7 @@ export const fetchWeatherAlerts = async (suppliers: Supplier[]): Promise<Disrupt
       const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
       try {
-        const response = await fetch('/api/weather/alerts', {
+        const response = await fetch(`${API_BASE_URL}/api/weather/alerts`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -78,7 +80,7 @@ export const fetchCurrentWeather = async (lat: number, lon: number): Promise<any
       const timeout = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
       try {
-        const response = await fetch(`/api/weather/current?lat=${lat}&lon=${lon}`, {
+        const response = await fetch(`${API_BASE_URL}/api/weather/current?lat=${lat}&lon=${lon}`, {
           signal: controller.signal,
         });
 

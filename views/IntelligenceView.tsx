@@ -40,6 +40,7 @@ interface IntelligenceViewProps {
   isSimulated?: boolean;
   onToggleSimulation: () => void;
   disruptions: Disruption[];
+  suppliers?: Supplier[];
 }
 
 const IntelligenceView: React.FC<IntelligenceViewProps> = ({ 
@@ -50,7 +51,8 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
   onNavigateToResources, 
   isSimulated, 
   onToggleSimulation,
-  disruptions 
+  disruptions,
+  suppliers = []
 }) => {
   const [brief, setBrief] = useState<IntelligenceBrief | null>(null);
   const [weather, setWeather] = useState<any>(null);
@@ -93,7 +95,7 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
       // Run weather AND intelligence in parallel
       const [weatherData, intelData] = await Promise.all([
         fetchCurrentWeather(supplier.coordinates[0], supplier.coordinates[1]),
-        generateSupplierIntelligence(supplier, undefined, !!isSimulated, relevantDisruptions),
+        generateSupplierIntelligence(supplier, undefined, !!isSimulated, relevantDisruptions, suppliers),
       ]);
 
       // Check if component was unmounted

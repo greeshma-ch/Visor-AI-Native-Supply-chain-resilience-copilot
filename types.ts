@@ -2,7 +2,8 @@
 export enum RiskStatus {
   STABLE = 'STABLE',
   CAUTION = 'CAUTION',
-  RISKY = 'RISKY'
+  RISKY = 'RISKY',
+  PENDING = 'PENDING'
 }
 
 export type Role = 'Admin' | 'Manager' | 'Analyst' | 'Viewer';

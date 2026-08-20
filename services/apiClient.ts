@@ -5,19 +5,22 @@
 
 import { IntelligenceBrief, Supplier, ImpactAnalysis, Disruption, User } from "../types";
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
+
 /** Execute a fetch with AbortController timeout */
 const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs: number = 20000): Promise<Response> => {
+  const fullUrl = url.startsWith('/api') ? `${API_BASE_URL}${url}` : url;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const response = await fetch(url, { ...options, signal: controller.signal });
+    const response = await fetch(fullUrl, { ...options, signal: controller.signal });
     clearTimeout(timeout);
     return response;
   } catch (error: any) {
     clearTimeout(timeout);
     if (error.name === 'AbortError') {
-      throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
+      throw new Error(`Request to ${fullUrl} timed out after ${timeoutMs}ms`);
     }
     throw error;
   }
@@ -47,13 +50,14 @@ export const generateSupplierIntelligence = async (
   supplier: Supplier,
   weatherData?: any,
   isSimulated: boolean = false,
-  relevantDisruptions: Disruption[] = []
+  relevantDisruptions: Disruption[] = [],
+  allSuppliers: Supplier[] = []
 ): Promise<IntelligenceBrief | null> => {
   try {
     const res = await fetchWithTimeout("/api/ai/supplier-intelligence", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ supplier, weatherData, isSimulated, relevantDisruptions, allSuppliers: [supplier] }),
+      body: JSON.stringify({ supplier, weatherData, isSimulated, relevantDisruptions, allSuppliers: allSuppliers.length > 0 ? allSuppliers : [supplier] }),
     }, 20000);
 
     if (!res.ok) throw new Error(`Server error ${res.status}`);

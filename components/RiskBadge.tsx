@@ -12,6 +12,7 @@ const RiskBadge: React.FC<RiskBadgeProps> = ({ status, size = 'md' }) => {
     [RiskStatus.STABLE]: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     [RiskStatus.CAUTION]: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
     [RiskStatus.RISKY]: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+    [RiskStatus.PENDING]: 'bg-slate-500/10 text-slate-400 border-slate-500/20',
   };
 
   const sizes = {
@@ -20,13 +21,14 @@ const RiskBadge: React.FC<RiskBadgeProps> = ({ status, size = 'md' }) => {
     lg: 'px-4 py-1.5 text-xs',
   };
 
+  const dotColor = status === RiskStatus.STABLE ? 'bg-emerald-500' : 
+    status === RiskStatus.CAUTION ? 'bg-amber-500' : 
+    status === RiskStatus.RISKY ? 'bg-rose-500' : 'bg-slate-500 animate-pulse';
+
   return (
     <span className={`inline-flex items-center font-black rounded-lg border ${styles[status]} ${sizes[size]} uppercase tracking-widest`}>
-      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${
-        status === RiskStatus.STABLE ? 'bg-emerald-500' : 
-        status === RiskStatus.CAUTION ? 'bg-amber-500' : 'bg-rose-500'
-      }`} />
-      {status}
+      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${dotColor}`} />
+      {status === RiskStatus.PENDING ? 'Analyzing…' : status}
     </span>
   );
 };
