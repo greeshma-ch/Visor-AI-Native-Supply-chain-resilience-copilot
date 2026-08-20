@@ -241,7 +241,7 @@ async function startServer() {
   });
 
   // ─── Supplier Intelligence (Agent Pipeline) ────────────────────
-  app.post("/api/gemini/supplier-intelligence", async (req, res) => {
+  app.post("/api/ai/supplier-intelligence", async (req, res) => {
     const traceId = setTraceId();
     const { supplier, weatherData, isSimulated, relevantDisruptions } = req.body;
 
@@ -310,7 +310,7 @@ async function startServer() {
   });
 
   // ─── Global Risk Signals (Agent Pipeline) ──────────────────────
-  app.post("/api/gemini/global-risk-signals", async (req, res) => {
+  app.post("/api/ai/global-risk-signals", async (req, res) => {
     const traceId = setTraceId();
     const { user, suppliers } = req.body;
 
@@ -342,7 +342,7 @@ async function startServer() {
   });
 
   // ─── Impact Analysis (uses agent pipeline) ─────────────────────
-  app.post("/api/gemini/impact-analysis", async (req, res) => {
+  app.post("/api/ai/impact-analysis", async (req, res) => {
     const { supplier, isSimulated } = req.body;
     try {
       const result = await withTimeout(
@@ -368,7 +368,7 @@ async function startServer() {
   });
 
   // ─── Resource Briefing ─────────────────────────────────────────
-  app.post("/api/gemini/resource-briefing", async (req, res) => {
+  app.post("/api/ai/resource-briefing", async (req, res) => {
     const { title, location, type, activeDisruptionSummary } = req.body;
     try {
       const result = await withTimeout(
@@ -388,7 +388,7 @@ async function startServer() {
   });
 
   // ─── Resource Document ─────────────────────────────────────────
-  app.post("/api/gemini/resource-document", async (req, res) => {
+  app.post("/api/ai/resource-document", async (req, res) => {
     const { title, location, type, activeDisruptionSummary } = req.body;
     try {
       const result = await withTimeout(
@@ -414,7 +414,7 @@ async function startServer() {
   });
 
   // ─── Connection Check ──────────────────────────────────────────
-  app.post("/api/gemini/check", async (req, res) => {
+  app.post("/api/ai/check", async (req, res) => {
     try {
       const Groq = (await import("groq-sdk")).default;
       const groq = new Groq({ apiKey: process.env.GROQ_API_KEY || "" });

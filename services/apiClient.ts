@@ -28,7 +28,7 @@ export const generateGlobalRiskSignals = async (
   suppliers: Supplier[]
 ): Promise<Disruption[]> => {
   try {
-    const res = await fetchWithTimeout("/api/gemini/global-risk-signals", {
+    const res = await fetchWithTimeout("/api/ai/global-risk-signals", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ user, suppliers }),
@@ -50,7 +50,7 @@ export const generateSupplierIntelligence = async (
   relevantDisruptions: Disruption[] = []
 ): Promise<IntelligenceBrief | null> => {
   try {
-    const res = await fetchWithTimeout("/api/gemini/supplier-intelligence", {
+    const res = await fetchWithTimeout("/api/ai/supplier-intelligence", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ supplier, weatherData, isSimulated, relevantDisruptions, allSuppliers: [supplier] }),
@@ -69,7 +69,7 @@ export const generateImpactAnalysis = async (
   isSimulated: boolean
 ): Promise<ImpactAnalysis | null> => {
   try {
-    const res = await fetchWithTimeout("/api/gemini/impact-analysis", {
+    const res = await fetchWithTimeout("/api/ai/impact-analysis", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ supplier, isSimulated }),
@@ -90,7 +90,7 @@ export const generateResourceBriefing = async (
   activeDisruptionSummary?: string
 ): Promise<any> => {
   try {
-    const res = await fetchWithTimeout("/api/gemini/resource-briefing", {
+    const res = await fetchWithTimeout("/api/ai/resource-briefing", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, location, type, activeDisruptionSummary }),
@@ -111,7 +111,7 @@ export const generateResourceDocument = async (
   activeDisruptionSummary?: string
 ): Promise<any> => {
   try {
-    const res = await fetchWithTimeout("/api/gemini/resource-document", {
+    const res = await fetchWithTimeout("/api/ai/resource-document", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, location, type, activeDisruptionSummary }),
@@ -127,7 +127,7 @@ export const generateResourceDocument = async (
 
 export const checkGroqConnection = async (): Promise<{ success: boolean; message: string; modelUsed?: string }> => {
   try {
-    const res = await fetchWithTimeout("/api/gemini/check", {
+    const res = await fetchWithTimeout("/api/ai/check", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
     }, 10000);

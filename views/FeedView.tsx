@@ -15,9 +15,10 @@ interface FeedViewProps {
   suppliers: Supplier[];
   simulatedRiskyNodes?: string[];
   isRefreshing?: boolean;
+  isDisruptionDataLive?: boolean;
 }
 
-const FeedView: React.FC<FeedViewProps> = ({ user, categoryFilter, onNavigateToResources, disruptions, suppliers, simulatedRiskyNodes = [], isRefreshing }) => {
+const FeedView: React.FC<FeedViewProps> = ({ user, categoryFilter, onNavigateToResources, disruptions, suppliers, simulatedRiskyNodes = [], isRefreshing, isDisruptionDataLive }) => {
   const getRelativeTime = (timestamp: string) => {
     const now = new Date();
     const then = new Date(timestamp);
@@ -126,6 +127,11 @@ const FeedView: React.FC<FeedViewProps> = ({ user, categoryFilter, onNavigateToR
               {isRefreshing ? 'Syncing Real-time Feed...' : `Live Intelligence • ${finalFeed.length} Strategic Nodes Monitored`}
             </p>
           </div>
+          {!isDisruptionDataLive && !isRefreshing && (
+            <div className="flex items-center gap-2 mt-1">
+              <span className="text-[8px] font-black text-amber-400 uppercase tracking-widest">Showing example data — live feed unavailable</span>
+            </div>
+          )}
         </div>
         <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full h-fit">
           <Clock size={12} className="text-slate-500" />

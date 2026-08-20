@@ -186,6 +186,7 @@ const App: React.FC = () => {
   }, [user?.id]);
 
   const [disruptions, setDisruptions] = useState<Disruption[]>(MOCK_DISRUPTIONS);
+  const [isDisruptionDataLive, setIsDisruptionDataLive] = useState(false);
   const [resourceContext, setResourceContext] = useState<{ title: string; sources: { title: string; uri: string }[] } | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -233,6 +234,7 @@ const App: React.FC = () => {
       });
 
       setDisruptions(sorted.length > 0 ? sorted : MOCK_DISRUPTIONS);
+      setIsDisruptionDataLive(sorted.length > 0);
       
       if (combined.length > 0) {
         toast.success("Intelligence Refreshed", {
@@ -357,6 +359,7 @@ const App: React.FC = () => {
             suppliers={activeSuppliers}
             isRefreshing={isRefreshing}
             onResync={refreshDisruptions}
+            isDisruptionDataLive={isDisruptionDataLive}
           />
         );
       case 'REGISTRY':
@@ -397,6 +400,7 @@ const App: React.FC = () => {
             suppliers={activeSuppliers} 
             simulatedRiskyNodes={simulatedRiskyNodes}
             isRefreshing={isRefreshing}
+            isDisruptionDataLive={isDisruptionDataLive}
           />
         );
       case 'SETTINGS':

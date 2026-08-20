@@ -182,7 +182,8 @@ export const runRiskAgent = (
   supplier: Supplier,
   newsOutput: NewsAgentOutput,
   weatherOutput: WeatherAgentOutput,
-  supplyChainOutput: SupplyChainAgentOutput
+  supplyChainOutput: SupplyChainAgentOutput,
+  isSimulated: boolean = false
 ): RiskScore => {
   // Find disruptions relevant to this supplier
   const relevantDisruptions = newsOutput.disruptions.filter(d =>
@@ -193,6 +194,14 @@ export const runRiskAgent = (
     a.impactedSupplierIds.includes(supplier.id) ||
     matchLocations(supplier.location, a.location, supplier.coordinates) > 0.3
   );
+
+  // When simulated, inject a synthetic disruption so the SAME weighted formula scores it
+  if (isSimulated) {
+    const syntheticDisruption = { severity: 'High' as const, location: supplier.location, type: 'Incident' as const, title: 'Simulated Crisis Event', summary: 'Synthetic disruption injected for crisis simulation', confidence: 90, sourceUrls: [] as string[], verificationStatus: 'AI-synthesized' as const };
+    relevantDisruptions.push(syntheticDisruption);
+    const syntheticAlert = { severity: 'High' as const, location: supplier.location, condition: 'Crisis Simulation', temperature: 0, windSpeed: 0, humidity: 0, description: 'Simulated crisis alert', icon: '', impactedSupplierIds: [supplier.id], supplyChainImpact: 'Simulated high-impact disruption to supplier operations' };
+    relevantAlerts.push(syntheticAlert);
+  }
 
   const supplierImpact = supplyChainOutput.impacts.find(i => i.supplierId === supplier.id);
   const relevantImpacts = supplierImpact ? [supplierImpact] : [];
@@ -231,16 +240,21 @@ export const runRiskAgent = (
   const disruptionMatches = relevantImpacts.map(i => `${i.bottleneck} — Delay: ${i.estimatedDelay}`);
 
   // Build human-readable explanation
-  const explanation = [
+  const explanationLines = [];
+  if (isSimulated) {
+    explanationLines.push('⚠ SIMULATED CRISIS MODE — scores below reflect an injected synthetic disruption and do not represent live conditions.');
+  }
+  explanationLines.push(
     `Risk score: ${totalScore}/100 → ${level}`,
     `Severity: ${severity.score}/30 — ${severity.explanation}`,
     `Criticality: ${criticality.score}/25 — ${criticality.explanation}`,
     `Proximity: ${proximity.score}/20 — ${proximity.explanation}`,
     `Confidence: ${confidence.score}/15 — ${confidence.explanation}`,
     `Duration: ${duration.score}/10 — ${duration.explanation}`,
-  ].join('\n');
+  );
+  const explanation = explanationLines.join('\n');
 
-  logger.info('risk-computed', `${supplier.name}: ${totalScore}/100 (${level})`, {
+  logger.info('risk-computed', `${supplier.name}: ${totalScore}/100 (${level})${isSimulated ? ' [SIMULATED]' : ''}`, {
     supplierId: supplier.id,
     score: totalScore,
     level,

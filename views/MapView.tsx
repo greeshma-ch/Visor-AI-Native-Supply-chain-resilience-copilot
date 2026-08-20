@@ -114,8 +114,6 @@ const MapView: React.FC<MapViewProps> = ({ suppliers, categoryFilter, statusFilt
   const [mapCenter, setMapCenter] = useState({ lat: centerCoords[0], lng: centerCoords[1] });
   const [mapZoom, setMapZoom] = useState(3);
 
-  console.log("Maps key:", import.meta.env.VITE_GOOGLE_MAPS_API_KEY);
-
   // Sync map center when hqLocation changes
   useEffect(() => {
     if (hqLocation) {

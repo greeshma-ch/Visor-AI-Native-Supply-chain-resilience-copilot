@@ -37,7 +37,8 @@ const generateDeterministicBriefing = (
   riskScore: RiskScore,
   newsOutput: NewsAgentOutput,
   weatherOutput: WeatherAgentOutput,
-  supplyChainOutput: SupplyChainAgentOutput
+  supplyChainOutput: SupplyChainAgentOutput,
+  alternativeCandidates: string[] = []
 ): BriefingAgentOutput => {
   const impact = supplyChainOutput.impacts.find(i => i.supplierId === supplier.id);
   const conditions = weatherOutput.currentConditions[supplier.location];
@@ -66,8 +67,22 @@ const generateDeterministicBriefing = (
       : riskScore.level === RiskStatus.CAUTION
         ? ['Monitor situation closely for escalation', 'Review contingency plans', 'Pre-alert backup suppliers']
         : ['Continue standard monitoring', 'No immediate action required'],
-    alternativeSuppliers: [],
+    alternativeSuppliers: alternativeCandidates,
   };
+};
+
+/**
+ * Compute alternative supplier candidates from the registry.
+ * Same category, exclude current supplier, max 3.
+ */
+const computeAlternativeCandidates = (
+  supplier: Supplier,
+  allSuppliers: Supplier[]
+): string[] => {
+  return allSuppliers
+    .filter(s => s.id !== supplier.id && s.category === supplier.category)
+    .slice(0, 3)
+    .map(s => `${s.name} (${s.location})`);
 };
 
 /**
@@ -82,10 +97,17 @@ export const runBriefingAgent = async (
   newsOutput: NewsAgentOutput,
   weatherOutput: WeatherAgentOutput,
   supplyChainOutput: SupplyChainAgentOutput,
-  isSimulated: boolean = false
+  isSimulated: boolean = false,
+  allSuppliers: Supplier[] = []
 ): Promise<BriefingAgentOutput> => {
   const impact = supplyChainOutput.impacts.find(i => i.supplierId === supplier.id);
   const conditions = weatherOutput.currentConditions[supplier.location];
+
+  // Compute alternative candidates from the real registry
+  const alternativeCandidates = computeAlternativeCandidates(supplier, allSuppliers);
+  const alternativesBlock = alternativeCandidates.length > 0
+    ? `\nAVAILABLE ALTERNATIVE SUPPLIERS (same category, from registry — select ONLY from this list):\n${alternativeCandidates.map((c, i) => `${i + 1}. ${c}`).join('\n')}`
+    : '\nNo alternative suppliers available in the registry for this category.';
 
   const systemPrompt = `You are a supply chain executive briefing writer. Generate a concise intelligence briefing from the pre-analyzed evidence below. 
 
@@ -94,6 +116,7 @@ CRITICAL RULES:
 2. ONLY reference specific events from the evidence provided.
 3. Keep each field concise (2-3 sentences max).
 4. The todayFeed items MUST reference actual events from the evidence.
+5. For alternativeSuppliers, ONLY select from the provided list of available alternatives. Do NOT invent supplier names.
 
 Respond ONLY with valid JSON:
 {
@@ -103,7 +126,7 @@ Respond ONLY with valid JSON:
   "todayFeed": [{"title": "string", "status": "STABLE|CAUTION|RISKY", "insight": "string"}],
   "recentFeed": [{"title": "string", "status": "STABLE|CAUTION|RISKY", "insight": "string"}],
   "mitigationSteps": ["Specific actionable step based on the evidence"],
-  "alternativeSuppliers": ["Alternative region or supplier type"]
+  "alternativeSuppliers": ["Only names from the provided alternatives list"]
 }`;
 
   const userPrompt = `SUPPLIER: ${supplier.name} (${supplier.category}) at ${supplier.location}
@@ -120,6 +143,7 @@ ${weatherOutput.alerts.filter(a => a.impactedSupplierIds.includes(supplier.id)).
 
 SUPPLY CHAIN IMPACT:
 ${impact ? `Bottleneck: ${impact.bottleneck}\nDelay: ${impact.estimatedDelay}\nCascade Risk: ${impact.cascadeRisk}` : 'No impact detected.'}
+${alternativesBlock}
 
 Generate a concise executive briefing. Every statement must be traceable to the evidence above.`;
 
@@ -141,7 +165,7 @@ Generate a concise executive briefing. Every statement must be traceable to the 
 
         if (!parsed || !parsed.vectorSummary) {
           logger.warn('parse-failed', 'Briefing response failed validation, using fallback');
-          return generateDeterministicBriefing(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput);
+          return generateDeterministicBriefing(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput, alternativeCandidates);
         }
 
         // Validate status values in todayFeed/recentFeed
@@ -159,16 +183,22 @@ Generate a concise executive briefing. Every statement must be traceable to the 
           }));
         }
 
+        // If LLM returned no alternatives but we have candidates, use registry candidates
+        if ((!parsed.alternativeSuppliers || parsed.alternativeSuppliers.length === 0) && alternativeCandidates.length > 0) {
+          parsed.alternativeSuppliers = alternativeCandidates;
+        }
+
         return parsed as BriefingAgentOutput;
       }, () => {
         logger.warn('circuit-fallback', 'Groq circuit open, using deterministic briefing');
-        return generateDeterministicBriefing(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput);
+        return generateDeterministicBriefing(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput, alternativeCandidates);
       });
     });
 
     return result;
   } catch (error: any) {
     logger.error('agent-failed', `Briefing agent failed: ${error.message}`);
-    return generateDeterministicBriefing(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput);
+    return generateDeterministicBriefing(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput, alternativeCandidates);
   }
 };
+

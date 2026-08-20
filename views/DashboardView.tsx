@@ -26,6 +26,7 @@ interface DashboardViewProps {
   suppliers: Supplier[];
   isRefreshing?: boolean;
   onResync?: () => void;
+  isDisruptionDataLive?: boolean;
 }
 
 const DashboardView: React.FC<DashboardViewProps> = ({ 
@@ -39,7 +40,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({
   disruptions,
   suppliers,
   isRefreshing,
-  onResync
+  onResync,
+  isDisruptionDataLive
 }) => {
   const channelSuppliers = React.useMemo(() => suppliers.filter(s => {
     return categoryFilter === 'ALL' || s.category === categoryFilter;
@@ -349,6 +351,9 @@ const DashboardView: React.FC<DashboardViewProps> = ({
               <div className="flex items-center gap-1.5 mt-1">
                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Live: Node-Synced</span>
+                {!isDisruptionDataLive && !isRefreshing && (
+                  <span className="text-[8px] font-black text-amber-400 uppercase tracking-widest ml-2">Showing example data — live feed unavailable</span>
+                )}
               </div>
             </div>
             <button 

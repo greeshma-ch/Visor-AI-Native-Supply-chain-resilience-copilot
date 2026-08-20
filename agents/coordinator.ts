@@ -59,13 +59,13 @@ export const runSupplierPipeline = async (
 
   // ── Step 3: Risk Agent (DETERMINISTIC — no LLM) ──
   logger.info('step-3', 'Running Risk Agent (deterministic)');
-  const riskScore = runRiskAgent(supplier, newsOutput, weatherOutput, supplyChainOutput);
+  const riskScore = runRiskAgent(supplier, newsOutput, weatherOutput, supplyChainOutput, isSimulated);
   const step3Duration = Math.round(performance.now() - startTime);
   logger.info('step-3-complete', `Risk scoring complete in ${step3Duration - step2Duration}ms: ${riskScore.score}/100 (${riskScore.level})`);
 
   // ── Step 4: Briefing Agent ──
   logger.info('step-4', 'Running Executive Briefing Agent');
-  const briefing = await runBriefingAgent(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput, isSimulated);
+  const briefing = await runBriefingAgent(supplier, riskScore, newsOutput, weatherOutput, supplyChainOutput, isSimulated, allSuppliers);
   const step4Duration = Math.round(performance.now() - startTime);
   logger.info('step-4-complete', `Briefing generated in ${step4Duration - step3Duration}ms`);
 
