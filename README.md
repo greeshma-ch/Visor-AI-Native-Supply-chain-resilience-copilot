@@ -119,44 +119,41 @@ Combines news, weather, supply-chain impact, historical context and mitigation r
 
 ## Tech Stack
 
-Frontend
+### Frontend
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Recharts
+- Google Maps
 
-React
-TypeScript
-Vite
-Tailwind CSS
-Recharts
-Google Maps
+### Backend
+- Node.js
+- Express
+- TypeScript
 
-Backend
+### AI & Intelligence
+- Groq
+- Multi-agent orchestration
+- Deterministic risk engine
 
-Node.js
-Express
-TypeScript
+### External Intelligence
+- NewsAPI
+- OpenWeather
+- Google Maps API
 
-AI
+### Database & Authentication
+- Supabase
 
-Groq
-Multi-agent orchestration
-Deterministic risk engine
-
-External Intelligence
-
-NewsAPI
-OpenWeather
-Google Maps API
-
-Database & Authentication
-
-Supabase
+### Deployment
+- **Vercel** — Frontend
+- **Render** — Backend
 
 ---
 
-## Deployment
+## Project Structure
 
-Vercel — Frontend
-Render — Backend
-Project Structure
+```text
 VISOR/
 ├── agents/
 │   ├── coordinator.ts
@@ -176,45 +173,88 @@ VISOR/
 ├── server.ts
 ├── types.ts
 └── package.json
-
----
-
+```
 ## Local Development
-Install
+
+### Prerequisites
+
+- Node.js
+- npm
+- API keys for the services used by VISOR
+
+### 1. Install Dependencies
+
+```bash
 npm install
-Backend environment
+```
+### 2. Configure Environment Variables
 
-Create .env:
+Create a .env file in the project root for the backend:
 
+```bash
 GROQ_API_KEY=your_groq_api_key
 NEWS_API_KEY=your_news_api_key
 OPENWEATHER_API_KEY=your_openweather_api_key
-Frontend environment
+```
+
+Configure the frontend environment variables:
+
+```bash
 VITE_API_BASE_URL=http://localhost:3000
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-Run backend
-npm run dev
-Run frontend
-npx vite
+```
 
+Note: Never commit real API keys or secrets to the repository.
+
+### 3. Start the Backend
+
+```bash
+npm run dev
+```
+The VISOR intelligence server runs on:
+
+**http://localhost:3000**
+
+### 4. Start the Frontend
+
+Open a second terminal and run:
+```bash
+npx vite
+```
+Vite will display the local frontend URL, typically:
+
+**http://localhost:3001**
+
+Vite may automatically select another available port if 3001 is already in use.
+
+### 5. Validate the Production Build
+
+Run TypeScript validation:
+```bash
+npm run lint
+```
+Then create the production frontend build:
+```bash
+npm run build
+```
 ---
 
 ## Demo Deployment
 
-Frontend:
-https://visor-ai-native.vercel.app
+### Frontend:
+**https://visor-ai-native.vercel.app**
 
-The frontend is deployed on Vercel and communicates with the Node.js/Express intelligence backend deployed separately on Render.
+- The frontend is deployed on Vercel and communicates with the Node.js/Express intelligence backend deployed separately on Render.
 
-**Demo Status**
+### Demo Status
 
-This is a deployed demonstration build, not yet a production-hardened system.
+- This is a deployed demonstration build, not yet a production-hardened system.
 
-The core intelligence pipeline is implemented and functional. The project is currently undergoing final architectural stabilization before being considered production-ready.
+- The core intelligence pipeline is implemented and functional. The project is currently undergoing final architectural stabilization before being considered production-ready.
 
-Current architectural work
+**Current architectural work**
 1.Risk-state consistency between global analysis and supplier briefings
 2.Authoritative risk snapshot propagation
 3.Crisis simulation precedence
