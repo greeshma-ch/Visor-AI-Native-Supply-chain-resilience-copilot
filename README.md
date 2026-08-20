@@ -67,9 +67,9 @@ Risk Scoring
 VISOR uses a deterministic 0–100 risk score:
 
 Score	Status
-0–39	🟢 STABLE
-40–69	🟡 CAUTION
-70–100	🔴 RISKY
+1. 0–39	🟢 STABLE
+2. 40–69	🟡 CAUTION
+3. 70–100   🔴 RISKY
 
 The score considers:
 
