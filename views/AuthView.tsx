@@ -205,7 +205,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onComplete }) => {
 
           {authMode === 'signup' && (
             <>
-              <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="space-y-2">
+              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <Building2 size={14} /> Enterprise Domain
                 </label>
@@ -217,9 +217,9 @@ const AuthView: React.FC<AuthViewProps> = ({ onComplete }) => {
                   placeholder="e.g. Global Logistics Corp"
                   className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-600 transition-all text-white placeholder:text-slate-700 text-sm"
                 />
-              </motion.div>
+              </div>
 
-              <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="space-y-2">
+              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <Globe size={14} /> Global Headquarters
                 </label>
@@ -239,9 +239,9 @@ const AuthView: React.FC<AuthViewProps> = ({ onComplete }) => {
                     ))}
                   </datalist>
                 </div>
-              </motion.div>
+              </div>
 
-              <motion.div variants={{ hidden: { opacity: 0, x: -10 }, visible: { opacity: 1, x: 0 } }} className="space-y-2">
+              <div className="space-y-2">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                   <UserCircle size={14} /> Operational Role
                 </label>
@@ -261,7 +261,7 @@ const AuthView: React.FC<AuthViewProps> = ({ onComplete }) => {
                     <ChevronDown size={14} />
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </>
           )}
 
