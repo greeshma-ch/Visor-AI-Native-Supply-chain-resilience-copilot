@@ -31,7 +31,7 @@ How severe is the risk?
 What should be done next?
 Architecture
 
-##VISOR uses a multi-agent pipeline with a deterministic risk layer:
+VISOR uses a multi-agent pipeline with a deterministic risk layer:
 
              ┌──────────────┐
              │  News Agent  │
@@ -58,17 +58,17 @@ Architecture
                   Supplier Intelligence
 
                   
-###Key architectural principle
+Key architectural principle
 
 The LLM explains risk; it does not decide risk.
 
 The Risk Agent produces the authoritative risk score from structured evidence. The Briefing Agent then uses that score and the collected evidence to generate the executive narrative.
 
-###Risk Scoring
+Risk Scoring
 
 VISOR uses a deterministic 0–100 risk score:
 
-**Score Status
+Score Status
 1. 0–39    🟢 STABLE 
 2. 40–69   🟡 CAUTION 
 3. 70–100  🔴 RISKY   
@@ -82,8 +82,8 @@ Data confidence
 Event duration
 
 This makes the core risk classification transparent and reproducible rather than dependent on LLM output.
-
-Core Features
+---
+##Core Features
 🌐 Global Risk Intelligence
 
 Aggregates live news and weather signals across the supplier network.
@@ -111,8 +111,8 @@ Manage supplier nodes and monitor their current operational risk.
 🔎 Evidence-Driven Briefings
 
 Combines news, weather, supply-chain impact, historical context and mitigation recommendations into a single briefing.
-
-Tech Stack
+---
+##Tech Stack
 
 Frontend
 
@@ -144,8 +144,8 @@ Google Maps API
 Database & Authentication
 
 Supabase
-
-Deployment
+---
+##Deployment
 
 Vercel — Frontend
 Render — Backend
@@ -169,7 +169,9 @@ VISOR/
 ├── server.ts
 ├── types.ts
 └── package.json
-Local Development
+
+---
+##Local Development
 Install
 npm install
 Backend environment
@@ -194,26 +196,26 @@ Frontend:
 https://visor-ai-native.vercel.app
 
 The frontend is deployed on Vercel and communicates with the Node.js/Express intelligence backend deployed separately on Render.
-
-Demo Status
+---
+##Demo Status
 
 This is a deployed demonstration build, not yet a production-hardened system.
 
 The core intelligence pipeline is implemented and functional. The project is currently undergoing final architectural stabilization before being considered production-ready.
 
 Current architectural work
-Risk-state consistency between global analysis and supplier briefings
-Authoritative risk snapshot propagation
-Crisis simulation precedence
-New supplier PENDING lifecycle
-Background supplier intelligence updates
-Supplier alternative-node resolution
-Frontend/backend state consistency
-Production error and timeout handling
+1.Risk-state consistency between global analysis and supplier briefings
+2.Authoritative risk snapshot propagation
+3.Crisis simulation precedence
+4.New supplier PENDING lifecycle
+5.Background supplier intelligence updates
+6.Supplier alternative-node resolution
+7.Frontend/backend state consistency
+8.Production error and timeout handling
 
 These are hardening and consistency fixes, not changes to the fundamental architecture.
-
-Design Philosophy
+---
+##Design Philosophy
 
 VISOR separates three responsibilities:
 
@@ -226,8 +228,8 @@ Deterministic Risk
 AI Explanation
 
 This prevents the LLM from becoming the source of truth for operational risk while still using generative AI where it adds the most value: reasoning, synthesis and communication.
-
-Why VISOR?
+---
+##Why VISOR?
 
 Traditional supply-chain dashboards often show data without explaining what it means operationally.
 
@@ -236,15 +238,15 @@ VISOR aims to bridge that gap:
 Detect → Analyze → Score → Explain → Act
 
 The objective is to turn continuously changing external signals into supplier-level intelligence that an operations team can understand and act on quickly.
-
-Development Status
+---
+##Development Status
 
 Current: 🟡 Demo / Active Architectural Stabilization
 
 The application is deployed and available for demonstration.
 
 The next engineering phase focuses on production hardening, reliability, state consistency and performance optimization.
-
-License
+---
+##License
 
 This project is maintained as a personal/project demonstration repository.
