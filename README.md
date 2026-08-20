@@ -82,7 +82,9 @@ Data confidence
 Event duration
 
 This makes the core risk classification transparent and reproducible rather than dependent on LLM output.
+
 ---
+
 ##Core Features
 🌐 Global Risk Intelligence
 
@@ -111,7 +113,9 @@ Manage supplier nodes and monitor their current operational risk.
 🔎 Evidence-Driven Briefings
 
 Combines news, weather, supply-chain impact, historical context and mitigation recommendations into a single briefing.
+
 ---
+
 ##Tech Stack
 
 Frontend
@@ -144,7 +148,9 @@ Google Maps API
 Database & Authentication
 
 Supabase
+
 ---
+
 ##Deployment
 
 Vercel — Frontend
@@ -171,6 +177,7 @@ VISOR/
 └── package.json
 
 ---
+
 ##Local Development
 Install
 npm install
@@ -190,14 +197,17 @@ Run backend
 npm run dev
 Run frontend
 npx vite
-Demo Deployment
+
+---
+
+##Demo Deployment
 
 Frontend:
 https://visor-ai-native.vercel.app
 
 The frontend is deployed on Vercel and communicates with the Node.js/Express intelligence backend deployed separately on Render.
----
-##Demo Status
+
+**Demo Status**
 
 This is a deployed demonstration build, not yet a production-hardened system.
 
@@ -214,7 +224,9 @@ Current architectural work
 8.Production error and timeout handling
 
 These are hardening and consistency fixes, not changes to the fundamental architecture.
+
 ---
+
 ##Design Philosophy
 
 VISOR separates three responsibilities:
@@ -228,7 +240,9 @@ Deterministic Risk
 AI Explanation
 
 This prevents the LLM from becoming the source of truth for operational risk while still using generative AI where it adds the most value: reasoning, synthesis and communication.
+
 ---
+
 ##Why VISOR?
 
 Traditional supply-chain dashboards often show data without explaining what it means operationally.
@@ -238,7 +252,9 @@ VISOR aims to bridge that gap:
 Detect → Analyze → Score → Explain → Act
 
 The objective is to turn continuously changing external signals into supplier-level intelligence that an operations team can understand and act on quickly.
+
 ---
+
 ##Development Status
 
 Current: 🟡 Demo / Active Architectural Stabilization
@@ -246,7 +262,9 @@ Current: 🟡 Demo / Active Architectural Stabilization
 The application is deployed and available for demonstration.
 
 The next engineering phase focuses on production hardening, reliability, state consistency and performance optimization.
+
 ---
+
 ##License
 
 This project is maintained as a personal/project demonstration repository.
