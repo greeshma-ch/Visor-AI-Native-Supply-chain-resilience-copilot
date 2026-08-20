@@ -85,7 +85,8 @@ This makes the core risk classification transparent and reproducible rather than
 
 ---
 
-##Core Features
+## Core Features
+
 🌐 Global Risk Intelligence
 
 Aggregates live news and weather signals across the supplier network.
@@ -116,7 +117,7 @@ Combines news, weather, supply-chain impact, historical context and mitigation r
 
 ---
 
-##Tech Stack
+## Tech Stack
 
 Frontend
 
@@ -151,7 +152,7 @@ Supabase
 
 ---
 
-##Deployment
+## Deployment
 
 Vercel — Frontend
 Render — Backend
@@ -178,7 +179,7 @@ VISOR/
 
 ---
 
-##Local Development
+## Local Development
 Install
 npm install
 Backend environment
@@ -200,7 +201,7 @@ npx vite
 
 ---
 
-##Demo Deployment
+## Demo Deployment
 
 Frontend:
 https://visor-ai-native.vercel.app
@@ -227,7 +228,7 @@ These are hardening and consistency fixes, not changes to the fundamental archit
 
 ---
 
-##Design Philosophy
+## Design Philosophy
 
 VISOR separates three responsibilities:
 
@@ -243,7 +244,7 @@ This prevents the LLM from becoming the source of truth for operational risk whi
 
 ---
 
-##Why VISOR?
+## Why VISOR?
 
 Traditional supply-chain dashboards often show data without explaining what it means operationally.
 
@@ -255,7 +256,7 @@ The objective is to turn continuously changing external signals into supplier-le
 
 ---
 
-##Development Status
+## Development Status
 
 Current: 🟡 Demo / Active Architectural Stabilization
 
@@ -265,6 +266,6 @@ The next engineering phase focuses on production hardening, reliability, state c
 
 ---
 
-##License
+## License
 
 This project is maintained as a personal/project demonstration repository.
