@@ -3,7 +3,7 @@
  * All requests have AbortController timeouts and structured error handling.
  */
 
-import { IntelligenceBrief, Supplier, ImpactAnalysis, Disruption, User } from "../types";
+import { IntelligenceBrief, Supplier, ImpactAnalysis, Disruption, User, RiskScore } from "../types";
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/+$/, "");
 
@@ -29,7 +29,7 @@ const fetchWithTimeout = async (url: string, options: RequestInit, timeoutMs: nu
 export const generateGlobalRiskSignals = async (
   user: User,
   suppliers: Supplier[]
-): Promise<Disruption[]> => {
+): Promise<{ disruptions: Disruption[]; supplierRiskScores: Record<string, RiskScore> }> => {
   try {
     const res = await fetchWithTimeout("/api/ai/global-risk-signals", {
       method: "POST",
@@ -39,10 +39,16 @@ export const generateGlobalRiskSignals = async (
 
     if (!res.ok) throw new Error(`Server error ${res.status}`);
     const data = await res.json();
-    return data.disruptions || data || [];
+    if (Array.isArray(data)) {
+      return { disruptions: data, supplierRiskScores: {} };
+    }
+    return {
+      disruptions: data.disruptions || [],
+      supplierRiskScores: data.supplierRiskScores || {}
+    };
   } catch (e: any) {
     console.error("[apiClient] generateGlobalRiskSignals failed:", e.message);
-    return [];
+    return { disruptions: [], supplierRiskScores: {} };
   }
 };
 

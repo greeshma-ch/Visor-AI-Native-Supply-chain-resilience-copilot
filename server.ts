@@ -325,16 +325,20 @@ async function startServer() {
 
       if (!result) {
         logger.warn("global-risk", "Global pipeline timed out, returning empty");
-        return res.json([]);
+        return res.json({ disruptions: [], supplierRiskScores: {} });
       }
 
       logger.info("global-risk", `Global pipeline complete`, {
         traceId,
         latencyMs: result.latencyMs,
         disruptionCount: result.disruptions.length,
+        supplierRiskScoresCount: Object.keys(result.supplierRiskScores || {}).length,
       });
 
-      res.json(result.disruptions);
+      res.json({
+        disruptions: result.disruptions,
+        supplierRiskScores: result.supplierRiskScores || {}
+      });
     } catch (error: any) {
       logger.error("global-risk", `Global pipeline error: ${error.message}`, { traceId });
       res.status(500).json({ error: "Failed to generate global risk signals" });

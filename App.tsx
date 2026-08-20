@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, Supplier, User, RiskStatus, Disruption, Role } from './types';
+import { View, Supplier, User, RiskStatus, Disruption, Role, RiskScore } from './types';
 import { MOCK_DISRUPTIONS, MOCK_SUPPLIERS, getCityCoords } from './constants';
 import { fetchWeatherAlerts } from './services/weatherService';
 import { generateGlobalRiskSignals, generateSupplierIntelligence } from './services/apiClient';
@@ -74,6 +74,7 @@ const App: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [statusFilter, setStatusFilter] = useState<RiskStatus | 'ALL'>('ALL');
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [supplierRiskScores, setSupplierRiskScores] = useState<Record<string, RiskScore>>({});
 
   const [suppliers, setSuppliers] = useState<Supplier[]>(() => {
     const saved = localStorage.getItem('vs_suppliers');
@@ -202,10 +203,16 @@ const App: React.FC = () => {
       if (s.status === RiskStatus.PENDING) {
         return s;
       }
+      if (simulatedRiskyNodes.includes(s.id)) {
+        return { ...s, status: RiskStatus.RISKY };
+      }
+      if (supplierRiskScores[s.id]?.level) {
+        return { ...s, status: supplierRiskScores[s.id].level };
+      }
       const { status } = resolveSupplierStatus(s, disruptions, simulatedRiskyNodes);
       return { ...s, status };
     });
-  }, [suppliers, simulatedRiskyNodes, disruptions, manualStatusOverrides]);
+  }, [suppliers, simulatedRiskyNodes, disruptions, manualStatusOverrides, supplierRiskScores]);
 
   const withTimeout = <T extends unknown>(p: Promise<T>, ms: number): Promise<T> =>
     Promise.race([p, new Promise<T>((_, r) => setTimeout(() => r(new Error('timeout')), ms))]);
@@ -217,10 +224,15 @@ const App: React.FC = () => {
     setIsRefreshing(true);
 
     try {
-      const [dynamicDisruptions, weatherAlerts] = await Promise.all([
-        withTimeout(generateGlobalRiskSignals(user, suppliers), 20000).catch(() => []),
+      const [globalResult, weatherAlerts] = await Promise.all([
+        withTimeout(generateGlobalRiskSignals(user, suppliers), 20000).catch(() => ({ disruptions: [], supplierRiskScores: {} })),
         fetchWeatherAlerts(suppliers)
       ]);
+
+      const dynamicDisruptions = globalResult.disruptions || [];
+      if (globalResult.supplierRiskScores && Object.keys(globalResult.supplierRiskScores).length > 0) {
+        setSupplierRiskScores(prev => ({ ...prev, ...globalResult.supplierRiskScores }));
+      }
 
       // Combine and deduplicate by title + location
       const combined = [...dynamicDisruptions, ...weatherAlerts].filter((v, i, a) =>
@@ -342,6 +354,9 @@ const App: React.FC = () => {
     generateSupplierIntelligence(newSupplier, undefined, false, disruptions, [newSupplier, ...suppliers])
       .then(intelData => {
         if (intelData) {
+          if (intelData.riskScore) {
+            setSupplierRiskScores(prev => ({ ...prev, [newSupplier.id]: intelData.riskScore! }));
+          }
           const finalStatus =
             intelData.suggestedStatus ||
             intelData.riskScore?.level;

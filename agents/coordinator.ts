@@ -11,7 +11,7 @@
  * Target: total end-to-end latency under 10 seconds.
  */
 
-import { CoordinatorResult, Supplier, User, Disruption, RiskStatus } from '../types';
+import { CoordinatorResult, Supplier, User, Disruption, RiskStatus, RiskScore } from '../types';
 import { runNewsAgent } from './newsAgent';
 import { runWeatherAgent } from './weatherAgent';
 import { runSupplyChainAgent } from './supplyChainAgent';
@@ -123,7 +123,7 @@ export const runSupplierPipeline = async (
 export const runGlobalRiskPipeline = async (
   user: User,
   suppliers: Supplier[]
-): Promise<{ disruptions: Disruption[]; latencyMs: number }> => {
+): Promise<{ disruptions: Disruption[]; supplierRiskScores: Record<string, RiskScore>; latencyMs: number }> => {
   const traceId = setTraceId();
   const startTime = performance.now();
   logger.info('global-pipeline-start', 'Starting global risk pipeline', { traceId, supplierCount: suppliers.length });
@@ -133,6 +133,15 @@ export const runGlobalRiskPipeline = async (
     runNewsAgent(suppliers, process.env.NEWS_API_KEY),
     runWeatherAgent(suppliers, process.env.OPENWEATHER_API_KEY),
   ]);
+
+  // Supply Chain Impact Agent
+  const supplyChainOutput = await runSupplyChainAgent(suppliers, newsOutput, weatherOutput);
+
+  // Authoritative RiskScores computed for all suppliers via deterministic runRiskAgent()
+  const supplierRiskScores: Record<string, RiskScore> = {};
+  for (const s of suppliers) {
+    supplierRiskScores[s.id] = runRiskAgent(s, newsOutput, weatherOutput, supplyChainOutput, false);
+  }
 
   // Convert news disruptions to Disruption type
   const newsDisruptions: Disruption[] = newsOutput.disruptions.map((d, i) => ({
@@ -186,7 +195,8 @@ export const runGlobalRiskPipeline = async (
     newsDisruptions: newsDisruptions.length,
     weatherDisruptions: weatherDisruptions.length,
     totalDisruptions: allDisruptions.length,
+    supplierRiskScoresCount: Object.keys(supplierRiskScores).length,
   });
 
-  return { disruptions: allDisruptions, latencyMs };
+  return { disruptions: allDisruptions, supplierRiskScores, latencyMs };
 };
