@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Supplier, IntelligenceBrief, RiskStatus, User, ImpactAnalysis, Disruption } from '../types';
+import { Supplier, IntelligenceBrief, RiskStatus, User, ImpactAnalysis, Disruption, RiskScore } from '../types';
 import { generateSupplierIntelligence } from '../services/apiClient';
 import { fetchCurrentWeather } from '../services/weatherService';
 import RiskBadge from '../components/RiskBadge';
@@ -40,6 +40,7 @@ interface IntelligenceViewProps {
   onToggleSimulation: () => void;
   disruptions: Disruption[];
   suppliers?: Supplier[];
+  authoritativeRiskScore?: RiskScore;
 }
 
 const IntelligenceView: React.FC<IntelligenceViewProps> = ({ 
@@ -50,11 +51,16 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
   isSimulated, 
   onToggleSimulation,
   disruptions,
-  suppliers = []
+  suppliers = [],
+  authoritativeRiskScore
 }) => {
   const [brief, setBrief] = useState<IntelligenceBrief | null>(null);
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const effectiveStatus = isSimulated
+    ? (brief?.suggestedStatus || brief?.riskScore?.level || RiskStatus.RISKY)
+    : (authoritativeRiskScore?.level || supplier.status || brief?.suggestedStatus || RiskStatus.STABLE);
   const [error, setError] = useState<string | null>(null);
   const [isImpactExpanded, setIsImpactExpanded] = useState(false);
   const [mitigationSuccess, setMitigationSuccess] = useState(false);
@@ -209,7 +215,7 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
                 <span className="text-[8px] font-black text-blue-500 uppercase tracking-widest mb-1">
                   {isSimulated ? 'Strategic Threat Level' : 'AI Assessment'}
                 </span>
-                <RiskBadge status={brief?.suggestedStatus || supplier.status} size="md" />
+                <RiskBadge status={effectiveStatus} size="md" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -317,10 +323,10 @@ const IntelligenceView: React.FC<IntelligenceViewProps> = ({
               <h3 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
                 <RefreshCw size={18} className="text-blue-500" /> Intelligence Synthesis Vectors
               </h3>
-              {!loading && brief?.suggestedStatus && (
+              {!loading && (
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Live Signal:</span>
-                  <RiskBadge status={brief.suggestedStatus} size="sm" />
+                  <RiskBadge status={effectiveStatus} size="sm" />
                 </div>
               )}
             </div>

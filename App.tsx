@@ -514,6 +514,7 @@ const App: React.FC = () => {
                     onToggleSimulation={() => toggleNodeSimulation(selectedSupplier.id)}
                     disruptions={disruptions}
                     suppliers={activeSuppliers}
+                    authoritativeRiskScore={supplierRiskScores[selectedSupplier.id]}
                   />
                 </div>
               </motion.div>
